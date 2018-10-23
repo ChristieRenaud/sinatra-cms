@@ -1,0 +1,7 @@
+<form action="/<%= @filename %>/rename" method="post">
+  <label for="new_filename">Enter a new name for <%= @filename %>:</label>
+  <div>
+    <input name="new_filename" id="new_filename" value="<%= @filename || params[:new_filename] %>"/>
+    <button type="submit">Enter</button>
+  </div>
+</form>

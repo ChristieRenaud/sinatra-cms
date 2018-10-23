@@ -1,0 +1,21 @@
+body {
+  padding: 1em;
+  font-family: "Open Sans", Helvetica, Arial, sans-serif;
+  color: #333;
+  background: pink;
+}
+a {color: #cc33cc;}
+
+.message {
+  padding: 10px;
+  background: #FFFF99;
+}
+
+form.inline {
+  display: inline;
+}
+
+.user-status {
+  font-style: italic;
+  font-size: 0.9em;
+}
