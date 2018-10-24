@@ -37,7 +37,7 @@ def load_file_content(path)
   content = File.read(path)
   case File.extname(path)
   when ".txt"
-    headers["Content-Type"] = "text/plain"
+    headers "Content-Type"  => "text/plain"
     content
   when ".md"
     erb render_markdown(content)
@@ -130,27 +130,6 @@ def process_error(filename, view)
     error_action("Filename already used. Please choose a new filename.", view)
   end
 end
-
-
-# post "/create" do
-#   require_signed_in_user
-#   filename = params[:filename].to_s
-#   case filename_error(filename)
-#   when "no name"
-#     error_action("A name is required.", :new)
-#   when "invalid extension"
-#     error_action("File must have a .txt or .md extension.", :new)
-#   when "name already used"
-#     error_action("Filename already used. Please choose a new filename.", :new)
-#   else
-#     file_path = File.join(data_path, filename)
-
-#     File.write(file_path, "")
-#     session[:message] = "#{params[:filename]} has been created."
-    
-#     redirect "/"
-#   end
-# end
 
 post "/create" do
   require_signed_in_user
@@ -254,6 +233,7 @@ post "/:filename/duplicate" do
   new_filename = File.basename(params[:filename], ".*") + "copy" + extension
   new_file_path = File.join(data_path, new_filename)
   File.write(new_file_path, File.read(file_path))
+  session[:message] = "#{params[:filename]} has been duplicated."
 
   redirect "/"
 end

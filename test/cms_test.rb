@@ -53,9 +53,6 @@ class CMSTest < Minitest::Test
     post "/sort/abc"
     assert_equal(302, last_response.status)
     assert_equal("abc", session[:sort])
-
-    get "/"
-    assert_equal(["about.md", "changes.txt"], @files)
   end
 
   def test_sort_by_date
@@ -188,6 +185,69 @@ class CMSTest < Minitest::Test
     post "test.txt/delete"
     assert_equal("You must be signed in to perform this action.", session[:message])
     assert_equal(302, last_response.status)
+  end
+
+  def test_rename
+    create_document("changes.txt", "abcdefg")
+    get "/changes.txt/rename", {}, admin_session
+    assert_equal(200, last_response.status)
+
+    post "/changes.txt/rename", { new_filename: "changes2.txt" }
+    assert_equal(302, last_response.status)
+    assert_equal("File has been renamed.", session[:message])
+
+    get "/" 
+    assert_includes(last_response.body,"changes2.txt")
+    refute_includes(last_response.body,"changes.txt")
+
+    get "/changes2.txt"
+    assert_equal(200, last_response.status)
+    assert_includes(last_response.body,"abcdefg")
+  end
+
+  def test_rename_signed_out
+    create_document("changes.txt", "abcdefg")
+    get "/changes.txt/rename"
+
+    assert_equal(302, last_response.status)
+    assert_equal("You must be signed in to perform this action.", session[:message])
+  end
+
+  def test_rename_invalid_name
+    create_document("changes.txt", "abcdefg")
+    get "/changes.txt/rename", {}, admin_session
+    assert_equal(200, last_response.status)
+
+    post "/changes.txt/rename", { new_filename: "changes.txt" }
+    assert_includes(last_response.body, "Filename already used. Please choose a new filename.")
+    assert_equal(422, last_response.status)
+
+    post "/changes.txt/rename", { new_filename: "changes2" }
+    assert_includes(last_response.body, "File must have a .txt or .md extension.")
+    assert_equal(422, last_response.status)
+  end
+
+  def test_duplicate_file
+    create_document("changes.txt", "abcdefg")
+    post "/changes.txt/duplicate", {}, admin_session
+    assert_equal(302, last_response.status)
+    assert_equal("changes.txt has been duplicated.", session[:message])
+
+    get "/"
+    assert_includes(last_response.body, "changes.txt")
+    assert_includes(last_response.body, "changescopy.txt")
+
+    get "/changescopy.txt"
+    assert_equal(200, last_response.status)
+    assert_includes(last_response.body, "abcdefg")
+  end
+
+  def test_duplicate_file_signed_out
+    create_document("changes.txt", "abcdefg")
+    post "/changes.txt/duplicate"
+
+    assert_equal(302, last_response.status)
+    assert_equal("You must be signed in to perform this action.", session[:message])
   end
 
   def test_view_signin_form
